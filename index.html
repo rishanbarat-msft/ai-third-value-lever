@@ -17,6 +17,90 @@
             --red-accent: #e50914;
         }
 
+        /* Password Gate */
+        .password-gate {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        .password-gate.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .gate-content { text-align: center; max-width: 400px; padding: 2rem; }
+        .gate-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.75rem;
+        }
+        .gate-subtitle {
+            font-size: 0.85rem;
+            color: var(--gray);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+        }
+        .gate-form {
+            display: flex;
+            gap: 0;
+            border: 1px solid rgba(201, 162, 39, 0.4);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .gate-form:focus-within { border-color: var(--gold); box-shadow: 0 0 30px rgba(201,162,39,0.15); }
+        .gate-form input {
+            flex: 1;
+            background: rgba(26, 42, 58, 0.6);
+            border: none;
+            padding: 1.1rem 1.5rem;
+            color: var(--white);
+            font-size: 1rem;
+            outline: none;
+            letter-spacing: 2px;
+        }
+        .gate-form input::placeholder { color: var(--gray); letter-spacing: 1px; font-size: 0.85rem; }
+        .gate-form button {
+            background: var(--gold);
+            border: none;
+            padding: 0 1.5rem;
+            color: var(--navy);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background 0.3s;
+        }
+        .gate-form button:hover { background: var(--gold-light); }
+        .gate-error {
+            color: var(--red-accent);
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .gate-error.show { opacity: 1; }
+        .gate-hint {
+            color: var(--gray);
+            font-size: 0.75rem;
+            margin-top: 2rem;
+            opacity: 0.6;
+        }
+        .gate-form.shake {
+            animation: shake 0.5s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         html {
@@ -779,8 +863,22 @@
     </style>
 </head>
 <body>
+    <!-- Password Gate -->
+    <div class="password-gate" id="password-gate">
+        <div class="gate-content">
+            <div class="gate-logo">XPØNENTIAL</div>
+            <p class="gate-subtitle">Private Presentation · Restricted Access</p>
+            <div class="gate-form">
+                <input type="password" id="gate-password" placeholder="Enter access code" autocomplete="off">
+                <button id="gate-submit"><i class="fas fa-arrow-right"></i></button>
+            </div>
+            <p class="gate-error" id="gate-error">Incorrect access code. Please try again.</p>
+            <p class="gate-hint">Contact the presenter for access credentials.</p>
+        </div>
+    </div>
+
     <!-- Loader -->
-    <div class="loader">
+    <div class="loader" style="display:none;">
         <div class="loader-text">XPØNENTIAL</div>
     </div>
 
@@ -1135,9 +1233,47 @@
     </div>
 
     <script>
+        // Password Gate
+        const gate = document.getElementById('password-gate');
+        const gateInput = document.getElementById('gate-password');
+        const gateSubmit = document.getElementById('gate-submit');
+        const gateError = document.getElementById('gate-error');
+        const gateForm = document.querySelector('.gate-form');
+        const ACCESS_HASH = 'XPONENTIALMSFT';
+
+        function checkAccess() {
+            if (sessionStorage.getItem('xp_auth') === 'granted') {
+                gate.classList.add('hidden');
+                document.querySelector('.loader').style.display = 'flex';
+                setTimeout(() => document.querySelector('.loader').classList.add('hidden'), 1500);
+            }
+        }
+        checkAccess();
+
+        function attemptLogin() {
+            const val = gateInput.value.trim();
+            if (val === ACCESS_HASH) {
+                sessionStorage.setItem('xp_auth', 'granted');
+                gate.classList.add('hidden');
+                document.querySelector('.loader').style.display = 'flex';
+                setTimeout(() => document.querySelector('.loader').classList.add('hidden'), 1500);
+            } else {
+                gateError.classList.add('show');
+                gateForm.classList.add('shake');
+                setTimeout(() => gateForm.classList.remove('shake'), 500);
+                gateInput.value = '';
+                gateInput.focus();
+            }
+        }
+
+        gateSubmit.addEventListener('click', attemptLogin);
+        gateInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') attemptLogin(); });
+
         // Loader
         window.addEventListener('load', () => {
-            setTimeout(() => document.querySelector('.loader').classList.add('hidden'), 1500);
+            if (sessionStorage.getItem('xp_auth') === 'granted') {
+                setTimeout(() => document.querySelector('.loader').classList.add('hidden'), 1500);
+            }
         });
 
         // Navbar scroll
