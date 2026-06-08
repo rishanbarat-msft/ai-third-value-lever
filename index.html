@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI as the Third Value Lever | Zuko Mdwaba</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --navy: #0f1923;
+            --navy-light: #1a2a3a;
+            --gold: #c9a227;
+            --gold-light: #e6c85c;
+            --white: #f0f0f0;
+            --gray: #8a9bae;
+            --red-accent: #e50914;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: var(--gold) var(--navy);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--navy);
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* Netflix-style loading animation */
+        .loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        .loader.hidden { opacity: 0; visibility: hidden; }
+        .loader-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            transition: background 0.3s ease;
+        }
+        nav.scrolled { background: rgba(15, 25, 35, 0.95); backdrop-filter: blur(20px); }
+        .nav-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--gold);
+        }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+            position: relative;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0;
+            width: 0; height: 2px;
+            background: var(--gold);
+            transition: width 0.3s;
+        }
+        .nav-links a:hover { color: var(--gold); }
+        .nav-links a:hover::after { width: 100%; }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding: 0 8%;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 70% 50%, rgba(201, 162, 39, 0.08) 0%, transparent 60%);
+        }
+        .hero-bg-x {
+            position: absolute;
+            right: -5%;
+            top: 10%;
+            font-family: 'Playfair Display', serif;
+            font-size: 50vw;
+            font-weight: 900;
+            color: rgba(255,255,255,0.02);
+            line-height: 1;
+            pointer-events: none;
+        }
+        .hero-content { position: relative; z-index: 2; max-width: 800px; }
+        .hero-tag {
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 1s ease forwards 1.5s;
+        }
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 7vw, 6rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeUp 1s ease forwards 1.7s;
+        }
+        .hero-title .gold { color: var(--gold); }
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray);
+            line-height: 1.7;
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 1s ease forwards 1.9s;
+        }
+        .hero-cta {
+            margin-top: 2.5rem;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 1s ease forwards 2.1s;
+        }
+        .hero-cta a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2.5rem;
+            background: var(--gold);
+            color: var(--navy);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .hero-cta a:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 10px 40px rgba(201,162,39,0.3); }
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            animation: fadeUp 1s ease forwards 2.5s;
+        }
+        .scroll-indicator span { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); }
+        .scroll-line {
+            width: 1px; height: 60px;
+            background: linear-gradient(180deg, var(--gold), transparent);
+            animation: scrollPulse 2s ease-in-out infinite;
+        }
+        @keyframes scrollPulse {
+            0%, 100% { opacity: 1; transform: scaleY(1); }
+            50% { opacity: 0.5; transform: scaleY(0.6); }
+        }
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sections */
+        section { padding: 8rem 8%; position: relative; }
+        .section-tag {
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--gray);
+            max-width: 700px;
+            line-height: 1.7;
+            margin-bottom: 3rem;
+        }
+
+        /* Paradox Section */
+        .paradox { background: linear-gradient(180deg, var(--navy) 0%, #0a1219 100%); }
+        .paradox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .paradox-card {
+            background: rgba(26, 42, 58, 0.6);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s, border-color 0.4s;
+        }
+        .paradox-card:hover { transform: translateY(-5px); border-color: var(--gold); }
+        .paradox-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+        }
+        .paradox-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 6rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+        .paradox-card:first-child .paradox-number { color: var(--white); }
+        .paradox-card:last-child .paradox-number { color: var(--gold); }
+        .paradox-desc { color: var(--gray); font-size: 1rem; line-height: 1.6; }
+        .paradox-insight {
+            background: rgba(26, 42, 58, 0.8);
+            border-left: 4px solid var(--gold);
+            padding: 2rem;
+            border-radius: 0 8px 8px 0;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: var(--white);
+        }
+        .paradox-insight strong { color: var(--gold); }
+
+        /* Speaker Section */
+        .speaker {
+            background: linear-gradient(135deg, #0a1219 0%, var(--navy) 50%, #0a1219 100%);
+        }
+        .speaker-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        .speaker-photo {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 4px solid var(--gold);
+            overflow: hidden;
+            margin: 0 auto;
+            background: var(--navy-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: var(--gold);
+            box-shadow: 0 0 60px rgba(201,162,39,0.2);
+        }
+        .speaker-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .stat-card {
+            background: rgba(26, 42, 58, 0.6);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+        .stat-label { font-size: 0.8rem; color: var(--gray); margin-top: 0.5rem; }
+        .career-timeline {
+            display: flex;
+            gap: 0;
+            margin-top: 3rem;
+            position: relative;
+            padding-top: 2rem;
+        }
+        .career-timeline::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+        }
+        .timeline-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding-top: 1.5rem;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: -6px; left: 50%;
+            transform: translateX(-50%);
+            width: 12px; height: 12px;
+            background: var(--gold);
+            border-radius: 50%;
+        }
+        .timeline-company { font-weight: 700; font-size: 0.85rem; }
+        .timeline-role { font-size: 0.75rem; color: var(--gray); margin-top: 0.3rem; }
+
+        /* Landscape Section */
+        .landscape { background: var(--navy); }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .stat-block {
+            background: rgba(26, 42, 58, 0.6);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            border-left: 4px solid var(--gold);
+            border-radius: 0 8px 8px 0;
+            padding: 2.5rem;
+            transition: transform 0.4s, box-shadow 0.4s;
+        }
+        .stat-block:hover { transform: translateY(-5px); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .stat-block .big-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+        .stat-block .big-desc { color: var(--gray); font-size: 0.9rem; line-height: 1.5; }
+        .signal-box {
+            background: rgba(201, 162, 39, 0.05);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .signal-box p { color: var(--white); line-height: 1.8; font-size: 1.05rem; }
+        .signal-box strong { color: var(--gold); }
+
+        /* SA Section */
+        .sa-section { background: linear-gradient(180deg, #0a1219 0%, var(--navy) 100%); }
+        .sa-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        .sa-card {
+            background: rgba(26, 42, 58, 0.6);
+            border: 1px solid rgba(201, 162, 39, 0.15);
+            border-radius: 8px;
+            padding: 2rem;
+            transition: all 0.4s;
+        }
+        .sa-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+        .sa-card-icon {
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+        .sa-card h4 { color: var(--gold); font-size: 1.1rem; margin-bottom: 0.75rem; }
+        .sa-card p { color: var(--gray); font-size: 0.9rem; line-height: 1.6; }
+
+        /* Opportunities Section */
+        .opportunities { background: var(--navy); }
+        .opp-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        .opp-card {
+            background: rgba(26, 42, 58, 0.6);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            border-radius: 8px;
+            padding: 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s;
+        }
+        .opp-card:hover { transform: translateY(-8px) scale(1.02); border-color: var(--gold); box-shadow: 0 30px 80px rgba(0,0,0,0.4); }
+        .opp-card-icon {
+            width: 70px; height: 70px;
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+            color: var(--gold);
+        }
+        .opp-card h4 { color: var(--gold); font-size: 1.1rem; margin-bottom: 1rem; }
+        .opp-card p { color: var(--gray); font-size: 0.9rem; line-height: 1.6; }
+
+        /* Portfolio section */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        .portfolio-levers {
+            background: rgba(26, 42, 58, 0.6);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            border-radius: 8px;
+            padding: 2.5rem;
+        }
+        .portfolio-levers h4 { color: var(--gold); font-size: 1.2rem; margin-bottom: 1.5rem; }
+        .lever-item {
+            padding: 1.2rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .lever-item:last-child { border: none; }
+        .lever-item h5 { color: var(--white); font-size: 1rem; margin-bottom: 0.4rem; }
+        .lever-item p { color: var(--gray); font-size: 0.85rem; }
+        .playbook-card {
+            background: linear-gradient(135deg, rgba(201, 162, 39, 0.1), rgba(26, 42, 58, 0.8));
+            border: 1px solid var(--gold);
+            border-top: 4px solid var(--gold);
+            border-radius: 8px;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .playbook-card h4 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 1rem; }
+        .playbook-card p { color: var(--gray); line-height: 1.7; font-size: 0.95rem; }
+        .playbook-card em { color: var(--gold); font-style: italic; display: block; margin-top: 1.5rem; }
+
+        /* Risks Section */
+        .risks { background: linear-gradient(180deg, var(--navy) 0%, #0a1219 100%); }
+        .risk-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .risk-card {
+            background: rgba(26, 42, 58, 0.6);
+            border: 1px solid rgba(229, 9, 20, 0.2);
+            border-radius: 8px;
+            padding: 2.5rem;
+            transition: all 0.4s;
+        }
+        .risk-card:hover { border-color: var(--red-accent); transform: translateY(-3px); }
+        .risk-card.warning { border-top: 4px solid var(--red-accent); }
+        .risk-card h4 { color: var(--gold); font-size: 1.1rem; margin-bottom: 1rem; }
+        .risk-card p { color: var(--gray); line-height: 1.7; font-size: 0.95rem; }
+        .risk-card .quote {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: var(--white);
+            font-size: 1.2rem;
+            margin: 1.5rem 0;
+            padding-left: 1rem;
+            border-left: 3px solid var(--gold);
+        }
+        .risk-card .cta-line { color: var(--gold); font-style: italic; margin-top: 1rem; }
+
+        /* Governance risks */
+        .gov-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        .gov-card {
+            background: rgba(26, 42, 58, 0.6);
+            border: 1px solid rgba(201, 162, 39, 0.15);
+            border-top: 3px solid var(--gold);
+            border-radius: 8px;
+            padding: 2rem;
+            transition: all 0.4s;
+        }
+        .gov-card:hover { transform: translateY(-5px); border-color: var(--gold); }
+        .gov-card i { font-size: 1.5rem; color: var(--gold); margin-bottom: 1rem; display: block; }
+        .gov-card h4 { color: var(--gold); margin-bottom: 0.75rem; }
+        .gov-card p { color: var(--gray); font-size: 0.85rem; line-height: 1.6; }
+        .social-contract {
+            background: rgba(201, 162, 39, 0.05);
+            border-left: 4px solid var(--gold);
+            border-radius: 0 8px 8px 0;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+        .social-contract strong { color: var(--gold); }
+        .social-contract p { line-height: 1.8; }
+
+        /* Closing Section */
+        .closing {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: radial-gradient(ellipse at center, rgba(201, 162, 39, 0.05) 0%, var(--navy) 70%);
+        }
+        .closing-icon { font-size: 3rem; color: var(--red-accent); margin-bottom: 2rem; }
+        .closing .section-title { font-size: clamp(3rem, 5vw, 5rem); margin-bottom: 1.5rem; }
+        .closing .section-subtitle { text-align: center; margin: 0 auto 3rem; }
+        .closing-pillars {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-width: 900px;
+            margin: 0 auto 4rem;
+        }
+        .pillar {
+            background: rgba(26, 42, 58, 0.6);
+            border-top: 3px solid var(--gold);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        .pillar p { color: var(--gray); font-size: 0.9rem; line-height: 1.5; }
+
+        /* Contact */
+        .contact-info {
+            margin-top: 3rem;
+            padding-top: 3rem;
+            border-top: 1px solid rgba(201, 162, 39, 0.3);
+        }
+        .contact-info h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .contact-info .role { color: var(--gray); margin-bottom: 1rem; }
+        .contact-links { display: flex; gap: 2rem; justify-content: center; margin-top: 1rem; }
+        .contact-links a {
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s;
+        }
+        .contact-links a:hover { color: var(--gold-light); }
+
+        /* Chatbot */
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--navy);
+            box-shadow: 0 10px 40px rgba(201, 162, 39, 0.4);
+            z-index: 9999;
+            transition: all 0.3s;
+            animation: botPulse 3s ease-in-out infinite;
+        }
+        .chatbot-toggle:hover { transform: scale(1.1); }
+        @keyframes botPulse {
+            0%, 100% { box-shadow: 0 10px 40px rgba(201, 162, 39, 0.4); }
+            50% { box-shadow: 0 10px 60px rgba(201, 162, 39, 0.7); }
+        }
+        .chatbot-window {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            width: 380px;
+            height: 500px;
+            background: var(--navy-light);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 16px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 9998;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.5);
+            animation: slideUp 0.3s ease;
+        }
+        .chatbot-window.open { display: flex; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chatbot-header {
+            padding: 1.2rem 1.5rem;
+            background: rgba(201, 162, 39, 0.1);
+            border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .chatbot-header .dot { width: 10px; height: 10px; border-radius: 50%; background: #4caf50; animation: blink 2s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .chatbot-header span { font-weight: 600; font-size: 0.9rem; }
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .chat-msg {
+            max-width: 85%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            animation: msgFade 0.3s ease;
+        }
+        @keyframes msgFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-msg.bot {
+            background: rgba(201, 162, 39, 0.1);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-msg.user {
+            background: var(--gold);
+            color: var(--navy);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            font-weight: 500;
+        }
+        .chatbot-input {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(201, 162, 39, 0.2);
+            display: flex;
+            gap: 0.75rem;
+        }
+        .chatbot-input input {
+            flex: 1;
+            background: rgba(15, 25, 35, 0.8);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            color: var(--white);
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .chatbot-input input:focus { border-color: var(--gold); }
+        .chatbot-input button {
+            background: var(--gold);
+            border: none;
+            border-radius: 8px;
+            padding: 0 1rem;
+            color: var(--navy);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        .chatbot-input button:hover { background: var(--gold-light); }
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0 1.5rem 1rem;
+        }
+        .quick-reply {
+            background: rgba(201, 162, 39, 0.1);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            color: var(--gold);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .quick-reply:hover { background: var(--gold); color: var(--navy); }
+
+        /* Scroll animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-60px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal-left.active { opacity: 1; transform: translateX(0); }
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(60px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal-right.active { opacity: 1; transform: translateX(0); }
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal-scale.active { opacity: 1; transform: scale(1); }
+
+        /* Particle background */
+        .particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Counter animation */
+        .counter { display: inline-block; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav { padding: 1rem 2rem; }
+            .nav-links { display: none; }
+            section { padding: 4rem 5%; }
+            .hero { padding: 0 5%; }
+            .paradox-grid, .sa-grid, .risk-grid, .portfolio-grid { grid-template-columns: 1fr; }
+            .stats-row, .opp-cards, .gov-grid, .closing-pillars { grid-template-columns: 1fr; }
+            .speaker-grid { grid-template-columns: 1fr; }
+            .speaker-stats { grid-template-columns: 1fr; }
+            .career-timeline { flex-wrap: wrap; }
+            .chatbot-window { width: calc(100% - 2rem); right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader">
+        <div class="loader-text">XPØNENTIAL</div>
+    </div>
+
+    <!-- Particles canvas -->
+    <canvas class="particles" id="particles"></canvas>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-brand">XPØNENTIAL</div>
+        <ul class="nav-links">
+            <li><a href="#paradox">The Paradox</a></li>
+            <li><a href="#landscape">Landscape</a></li>
+            <li><a href="#opportunities">Opportunities</a></li>
+            <li><a href="#risks">Risks</a></li>
+            <li><a href="#closing">Close</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-bg-x">X</div>
+        <div class="hero-content">
+            <p class="hero-tag">Xpønential · The Best Way to Grow</p>
+            <h1 class="hero-title">AI as the<br><span class="gold">Third Value Lever</span></h1>
+            <p class="hero-subtitle">The landscape, the opportunities, and the risks for private capital — through an operator's lens.</p>
+            <div class="hero-cta">
+                <a href="#paradox"><i class="fas fa-play"></i> Begin the Journey</a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span>Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <!-- Speaker -->
+    <section class="speaker" id="speaker">
+        <div class="speaker-grid">
+            <div class="reveal-left">
+                <div class="speaker-photo">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+            </div>
+            <div class="reveal-right">
+                <div class="section-tag">Group CEO · The Xponential Growth Company</div>
+                <h2 class="section-title">Zuko Mdwaba</h2>
+                <p class="section-subtitle">The operating-CEO — nearly three decades pioneering enterprise technology across Africa, having built and scaled the businesses of the world's leading software companies on the continent.</p>
+                <div class="speaker-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">$100M+</div>
+                        <div class="stat-label">Salesforce Africa revenue scaled across 10 markets</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">Employee #1</div>
+                        <div class="stat-label">First on the ground in Africa for multiple global tech leaders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">~30 Years</div>
+                        <div class="stat-label">At the frontier of African enterprise technology</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="career-timeline reveal">
+            <div class="timeline-item">
+                <div class="timeline-company">Escher Group</div>
+                <div class="timeline-role">Country Leader</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-company">Oracle</div>
+                <div class="timeline-role">Country Leader</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-company">SAS</div>
+                <div class="timeline-role">Country Leader</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-company">Workday</div>
+                <div class="timeline-role">CEO, South Africa</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-company">Salesforce</div>
+                <div class="timeline-role">CEO, Africa</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-company">Xponential</div>
+                <div class="timeline-role">Group CEO</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Paradox -->
+    <section class="paradox" id="paradox">
+        <div class="reveal">
+            <div class="section-tag">The Opening</div>
+            <h2 class="section-title">Start With a Paradox</h2>
+            <p class="section-subtitle">Two numbers, both true. The space between them is the whole conversation.</p>
+        </div>
+        <div class="paradox-grid">
+            <div class="paradox-card reveal-left">
+                <div class="paradox-number counter" data-target="95">0</div><span style="font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;">%</span>
+                <p class="paradox-desc">of PE funds say their AI initiatives are meeting or beating the business case.</p>
+            </div>
+            <div class="paradox-card reveal-right">
+                <div class="paradox-number counter" data-target="95" style="color:var(--gold)">0</div><span style="font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:var(--gold);">%</span>
+                <p class="paradox-desc">of corporate generative-AI pilots produce no measurable P&L impact. (MIT)</p>
+            </div>
+        </div>
+        <div class="paradox-insight reveal">
+            <p><strong>It's an execution gap, not a technology gap.</strong> The model is rarely the constraint. The discipline to deploy it is. That is why AI is the third value lever — alongside financial engineering and operational excellence — and why it pays out only for those who operationalise.</p>
+        </div>
+    </section>
+
+    <!-- Agenda -->
+    <section class="landscape" id="agenda" style="padding-bottom: 4rem;">
+        <div class="reveal">
+            <div class="section-tag">Today's Conversation</div>
+            <h2 class="section-title">Three Questions — One Lens</h2>
+        </div>
+        <div class="opp-cards">
+            <div class="opp-card reveal" style="transition-delay: 0.1s;">
+                <div class="opp-card-icon"><i class="fas fa-globe-africa"></i></div>
+                <h4>01 · The AI Landscape</h4>
+                <p>Where the world is — and where South Africa actually stands.</p>
+            </div>
+            <div class="opp-card reveal" style="transition-delay: 0.2s;">
+                <div class="opp-card-icon"><i class="fas fa-search-dollar"></i></div>
+                <h4>02 · Opportunities</h4>
+                <p>How AI creates value for private capital… in the fund and in the portfolio.</p>
+            </div>
+            <div class="opp-card reveal" style="transition-delay: 0.3s;">
+                <div class="opp-card-icon"><i class="fas fa-shield-alt"></i></div>
+                <h4>03 · Risks</h4>
+                <p>Where it bites: disruption, deal mispricing, governance, and people.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Landscape Global -->
+    <section class="landscape" id="landscape">
+        <div class="reveal">
+            <div class="section-tag">01 · The AI Landscape</div>
+            <h2 class="section-title">Global: From Experiment to Operating System</h2>
+            <p class="section-subtitle">AI has moved from the lab to the operating model. For capital, it is now a value lever — not a science project.</p>
+        </div>
+        <div class="stats-row">
+            <div class="stat-block reveal" style="transition-delay: 0.1s;">
+                <div class="big-num">88%</div>
+                <div class="big-desc">of PE firms now use generative AI in M&A workflows — leading all sectors</div>
+            </div>
+            <div class="stat-block reveal" style="transition-delay: 0.2s;">
+                <div class="big-num">70+</div>
+                <div class="big-desc">Blackstone portfolio companies with AI deployed on pricing and staffing</div>
+            </div>
+            <div class="stat-block reveal" style="transition-delay: 0.3s;">
+                <div class="big-num">$700m</div>
+                <div class="big-desc">Nvidia–Cassava AI infrastructure rollout now reaching Africa</div>
+            </div>
+        </div>
+        <div class="signal-box reveal">
+            <p><strong>The signal:</strong> the frontier is no longer the differentiator — it is cheap and available to everyone. The capital flowing in is positioning for <strong>distribution and infrastructure</strong> (the picks and shovels), while the edge moves to whoever can <strong>deploy with discipline</strong>.</p>
+        </div>
+    </section>
+
+    <!-- South Africa -->
+    <section class="sa-section" id="south-africa">
+        <div class="reveal">
+            <div class="section-tag">01 · The AI Landscape</div>
+            <h2 class="section-title">South Africa: Wired Fast, But Capability-Constrained</h2>
+            <p class="section-subtitle">The infrastructure is arriving quickly. The binding constraint for your portfolio companies is people and data… not access.</p>
+        </div>
+        <div class="sa-grid">
+            <div class="sa-card reveal" style="transition-delay: 0.1s;">
+                <div class="sa-card-icon"><i class="fas fa-server"></i></div>
+                <h4>Infrastructure is landing</h4>
+                <p>Africa's largest data-centre market (~$2.2bn). Cloud regions from Microsoft, Google, AWS, Oracle. Cassava–Nvidia "AI Factory" brings sovereign GPU capacity onshore.</p>
+            </div>
+            <div class="sa-card reveal" style="transition-delay: 0.2s;">
+                <div class="sa-card-icon"><i class="fas fa-balance-scale"></i></div>
+                <h4>Policy is catching up</h4>
+                <p>Draft National AI Policy in Cabinet process; sector-specific, multi-regulator model anchored to POPIA & King V. Finalisation targeted 2026/27.</p>
+            </div>
+            <div class="sa-card reveal" style="transition-delay: 0.3s;">
+                <div class="sa-card-icon"><i class="fas fa-flag"></i></div>
+                <h4>Sovereignty is a theme</h4>
+                <p>Push to keep data and "intelligence" within borders; models tuned to local languages (Zulu, Afrikaans). Foreign-led infrastructure raises a dependence question.</p>
+            </div>
+            <div class="sa-card reveal" style="transition-delay: 0.4s;">
+                <div class="sa-card-icon"><i class="fas fa-user-graduate"></i></div>
+                <h4>Skills are the bottleneck</h4>
+                <p>60%+ of SA/African firms cite the skills gap as a top barrier to transformation; only ~5% of African AI practitioners have access to real compute.</p>
+            </div>
+        </div>
+        <div class="signal-box reveal" style="margin-top: 3rem;">
+            <p><strong>So the SA opportunity for private capital isn't to bet on the infrastructure race</strong> — it's to apply AI inside the businesses you already own.</p>
+        </div>
+    </section>
+
+    <!-- Opportunities -->
+    <section class="opportunities" id="opportunities">
+        <div class="reveal">
+            <div class="section-tag">02 · Opportunities for Private Capital</div>
+            <h2 class="section-title">In the Fund: The Deal Lifecycle</h2>
+            <p class="section-subtitle">The most mature, lowest-risk place to start… and it's closest to your daily work.</p>
+        </div>
+        <div class="opp-cards">
+            <div class="opp-card reveal" style="transition-delay: 0.1s;">
+                <div class="opp-card-icon"><i class="fas fa-search"></i></div>
+                <h4>Sourcing</h4>
+                <p>Screen far more targets, far faster. Platforms like EQT's Motherbrain consolidate 140,000+ data points for real-time origination.</p>
+            </div>
+            <div class="opp-card reveal" style="transition-delay: 0.2s;">
+                <div class="opp-card-icon"><i class="fas fa-cogs"></i></div>
+                <h4>Diligence</h4>
+                <p>Up to 50% faster review at leading firms. Pattern-spotting across documents no team could read in the window.</p>
+            </div>
+            <div class="opp-card reveal" style="transition-delay: 0.3s;">
+                <div class="opp-card-icon"><i class="fas fa-chart-line"></i></div>
+                <h4>Monitoring & Exit</h4>
+                <p>Live portfolio signals replace the quarterly board-pack lag — and sharpen the equity story at exit.</p>
+            </div>
+        </div>
+
+        <!-- Portfolio -->
+        <div class="reveal" style="margin-top: 4rem;">
+            <div class="section-tag">02 · Opportunities for Private Capital</div>
+            <h2 class="section-title">In the Portfolio: Where Premium Exits Are Made</h2>
+        </div>
+        <div class="portfolio-grid">
+            <div class="portfolio-levers reveal-left">
+                <h4>The high-value levers</h4>
+                <div class="lever-item">
+                    <h5>Predictive pricing</h5>
+                    <p>The fastest, most repeatable margin lever in most businesses.</p>
+                </div>
+                <div class="lever-item">
+                    <h5>Customer & churn analytics</h5>
+                    <p>Retain revenue you're currently losing silently.</p>
+                </div>
+                <div class="lever-item">
+                    <h5>Supply chain & operations</h5>
+                    <p>Working-capital and cost release in industrials and services.</p>
+                </div>
+            </div>
+            <div class="playbook-card reveal-right">
+                <i class="fas fa-chart-line" style="font-size: 2rem; color: var(--gold); margin-bottom: 1rem;"></i>
+                <h4>Playbooks, not pilots</h4>
+                <p>The firms that win don't run one-off experiments. They build a repeatable AI playbook and deploy it across every portfolio company — design once, activate, measure, compound.</p>
+                <em>Scale and consistency separate leaders from laggards.</em>
+            </div>
+        </div>
+    </section>
+
+    <!-- Risks -->
+    <section class="risks" id="risks">
+        <div class="reveal">
+            <div class="section-tag">03 · Risks for Private Capital</div>
+            <h2 class="section-title">The Deal: Disruption Cuts Both Ways</h2>
+            <p class="section-subtitle">The same force that creates value can quietly erode it. Underwrite for both.</p>
+        </div>
+        <div class="risk-grid">
+            <div class="risk-card reveal-left">
+                <h4><i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i>Moat disruption & mispricing</h4>
+                <p>AI will transform some businesses and undercut others' models. That makes pricing harder and adds a question to every diligence:</p>
+                <div class="quote">"Could this company's moat be disrupted by AI within the hold period?"</div>
+                <p class="cta-line">If you can't answer it, you're carrying unpriced risk.</p>
+            </div>
+            <div class="risk-card warning reveal-right">
+                <h4><i class="fas fa-robot" style="margin-right: 0.5rem;"></i>Execution risk: the 95% trap</h4>
+                <p>Most pilots never reach the P&L. The risk isn't doing nothing — it's funding motion that looks like progress. And the agentic shift raises the stakes: agents that act, not just assist, need governance before scale.</p>
+                <p class="cta-line">Demand proof of P&L impact, not demos.</p>
+            </div>
+        </div>
+
+        <!-- Governance -->
+        <div class="reveal" style="margin-top: 5rem;">
+            <h2 class="section-title">Governance, Talent & the Social Contract</h2>
+            <p class="section-subtitle">Three risks that are easy to underweight — and costly to ignore in this market.</p>
+        </div>
+        <div class="gov-grid">
+            <div class="gov-card reveal" style="transition-delay: 0.1s;">
+                <i class="fas fa-balance-scale"></i>
+                <h4>Governance & POPIA</h4>
+                <p>AI regulation is coming via existing regulators. Data governance, explainability and algorithmic decisions move from optional to expected.</p>
+            </div>
+            <div class="gov-card reveal" style="transition-delay: 0.2s;">
+                <i class="fas fa-server"></i>
+                <h4>Vendor & sovereignty</h4>
+                <p>Foreign-led infrastructure and model dependence create lock-in and concentration risk. Ask where the data — and the value — ultimately sits.</p>
+            </div>
+            <div class="gov-card reveal" style="transition-delay: 0.3s;">
+                <i class="fas fa-users"></i>
+                <h4>Talent — the real ceiling</h4>
+                <p>35% cite talent as the #1 barrier to scaling AI. In SA the skills gap is sharper. Capability, not capital, is the binding constraint.</p>
+            </div>
+        </div>
+        <div class="social-contract reveal">
+            <p><strong>The social contract.</strong> For capital that answers to working families, AI cannot be only a cost-and-headcount story. The durable framing is augmentation and growth — win more work, serve more customers, protect and create jobs.</p>
+        </div>
+    </section>
+
+    <!-- Closing -->
+    <section class="closing" id="closing">
+        <div class="closing-icon reveal-scale">⛰️</div>
+        <h2 class="section-title reveal">An Ultra, Not a Sprint</h2>
+        <p class="section-subtitle reveal">AI value creation is won in the unglamorous base work and the discipline to keep executing after the early adrenaline fades. It punishes anyone who goes out too hard on the hype.<br><br><strong style="color: var(--gold);">The winners pace, instrument, and compound.</strong></p>
+        <div class="closing-pillars">
+            <div class="pillar reveal" style="transition-delay: 0.1s;">
+                <p><strong style="color:var(--gold);">Landscape:</strong> access is solved; capability is the edge.</p>
+            </div>
+            <div class="pillar reveal" style="transition-delay: 0.2s;">
+                <p><strong style="color:var(--gold);">Opportunity:</strong> build playbooks, not pilots.</p>
+            </div>
+            <div class="pillar reveal" style="transition-delay: 0.3s;">
+                <p><strong style="color:var(--gold);">Risk:</strong> underwrite disruption, govern, protect people.</p>
+            </div>
+        </div>
+        <div class="contact-info reveal">
+            <h3>Zuko Mdwaba</h3>
+            <p class="role">Group CEO, The Xponential Growth Company</p>
+            <div class="contact-links">
+                <a href="mailto:zuko@xponentialcompany.com"><i class="fas fa-envelope"></i> zuko@xponentialcompany.com</a>
+                <a href="https://www.xponentialcompany.com" target="_blank"><i class="fas fa-globe"></i> xponentialcompany.com</a>
+                <a href="https://www.linkedin.com/in/zuko-mdwaba-b427563/" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chatbot -->
+    <button class="chatbot-toggle" id="chatbot-toggle" aria-label="Open chatbot">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+    <div class="chatbot-window" id="chatbot-window">
+        <div class="chatbot-header">
+            <div class="dot"></div>
+            <span>AI Value Lever Assistant</span>
+        </div>
+        <div class="chatbot-messages" id="chatbot-messages">
+            <div class="chat-msg bot">👋 Hi! I'm the AI Value Lever assistant. Ask me anything about Zuko's presentation — the AI landscape, opportunities for PE firms, risks, or about Xponential.</div>
+        </div>
+        <div class="quick-replies" id="quick-replies">
+            <div class="quick-reply" data-msg="What is the Third Value Lever?">Third Value Lever?</div>
+            <div class="quick-reply" data-msg="Tell me about the 95% paradox">The 95% paradox</div>
+            <div class="quick-reply" data-msg="What opportunities exist for PE firms?">PE opportunities</div>
+            <div class="quick-reply" data-msg="What are the main risks?">Key risks</div>
+            <div class="quick-reply" data-msg="Who is Zuko Mdwaba?">About Zuko</div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbot-input" placeholder="Ask about the presentation..." autocomplete="off">
+            <button id="chatbot-send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+        // Loader
+        window.addEventListener('load', () => {
+            setTimeout(() => document.querySelector('.loader').classList.add('hidden'), 1500);
+        });
+
+        // Navbar scroll
+        window.addEventListener('scroll', () => {
+            document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 100);
+        });
+
+        // Scroll reveal
+        const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+        const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+        reveals.forEach(el => observer.observe(el));
+
+        // Counter animation
+        const counters = document.querySelectorAll('.counter');
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const target = +entry.target.dataset.target;
+                    let current = 0;
+                    const increment = target / 60;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= target) { current = target; clearInterval(timer); }
+                        entry.target.textContent = Math.floor(current);
+                    }, 25);
+                    counterObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        counters.forEach(c => counterObserver.observe(c));
+
+        // Particles
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = (Math.random() - 0.5) * 0.3;
+                this.opacity = Math.random() * 0.3 + 0.1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(201, 162, 39, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+        for (let i = 0; i < 50; i++) particles.push(new Particle());
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // Chatbot
+        const chatToggle = document.getElementById('chatbot-toggle');
+        const chatWindow = document.getElementById('chatbot-window');
+        const chatMessages = document.getElementById('chatbot-messages');
+        const chatInput = document.getElementById('chatbot-input');
+        const chatSend = document.getElementById('chatbot-send');
+        const quickReplies = document.querySelectorAll('.quick-reply');
+
+        chatToggle.addEventListener('click', () => chatWindow.classList.toggle('open'));
+
+        const knowledgeBase = {
+            "third value lever": "AI is the Third Value Lever — alongside financial engineering and operational excellence. It's no longer a science project; it's an operating-model upgrade. But it only pays out for those who operationalise with discipline, not just pilot.",
+            "paradox": "Here's the paradox: 95% of PE funds say their AI initiatives beat the business case, BUT 95% of corporate gen-AI pilots produce no measurable P&L impact (MIT). It's an execution gap, not a technology gap. The discipline to deploy is the constraint.",
+            "opportunities": "AI creates value for PE in two zones:\n\n📊 In the Fund: Sourcing (140K+ data points via platforms like EQT Motherbrain), Diligence (50% faster review), and Monitoring & Exit (live signals replace quarterly lag).\n\n🏭 In the Portfolio: Predictive pricing, churn analytics, and supply chain optimization. The key is playbooks, not pilots — deploy across every portfolio company.",
+            "risks": "Key risks include:\n\n⚠️ Moat disruption — Can AI undercut your portfolio company within the hold period?\n⚠️ The 95% trap — Funding motion that looks like progress but never hits P&L\n⚠️ Governance & POPIA — Regulation is coming via existing regulators\n⚠️ Talent — 35% cite it as #1 barrier; sharper in SA\n⚠️ The Social Contract — AI can't just be a headcount story",
+            "zuko": "Zuko Mdwaba is Group CEO of The Xponential Growth Company. Nearly 30 years pioneering enterprise tech across Africa. He scaled Salesforce Africa to $100M+ across 10 markets, was Employee #1 in Africa for multiple global tech leaders, and held leadership roles at Oracle, SAS, Workday, and Salesforce before founding Xponential. Education: Computer Science & Statistics, MIT Neuroscience in Business, UCT GSB Executive Development. He's also an endurance athlete.",
+            "south africa": "South Africa is wired fast but capability-constrained. Africa's largest data-centre market (~$2.2bn), cloud regions from all major providers, and Cassava-Nvidia GPU capacity landing. But 60%+ firms cite skills gaps, only ~5% of African AI practitioners have real compute access. The opportunity isn't the infrastructure race — it's applying AI inside businesses you already own.",
+            "landscape": "Globally, AI has moved from lab to operating model. 88% of PE firms use gen-AI in M&A workflows (leading all sectors), 70+ Blackstone portfolio companies have AI deployed, and $700m in Nvidia-Cassava infrastructure is reaching Africa. The frontier is no longer the differentiator — the edge is whoever can deploy with discipline.",
+            "playbook": "Winning firms don't run one-off experiments. They build a repeatable AI playbook: design once, activate across every portfolio company, measure, compound. Scale and consistency separate leaders from laggards. This is the 'Playbooks, not Pilots' principle.",
+            "xponential": "Xponential (stylized XPØNENTIAL) is 'The Best Way to Grow' — a growth company led by Zuko Mdwaba, focused on helping businesses scale through technology and AI adoption. Based at 155 West, Sandton, Johannesburg. Web: xponentialcompany.com"
+        };
+
+        function getBotResponse(msg) {
+            const lower = msg.toLowerCase();
+            if (lower.includes('third value') || lower.includes('lever')) return knowledgeBase["third value lever"];
+            if (lower.includes('paradox') || lower.includes('95%') || lower.includes('95 percent')) return knowledgeBase["paradox"];
+            if (lower.includes('opportunit') || lower.includes('fund') || lower.includes('portfolio') || lower.includes('deal')) return knowledgeBase["opportunities"];
+            if (lower.includes('risk') || lower.includes('danger') || lower.includes('threat')) return knowledgeBase["risks"];
+            if (lower.includes('zuko') || lower.includes('mdwaba') || lower.includes('who') || lower.includes('speaker') || lower.includes('ceo')) return knowledgeBase["zuko"];
+            if (lower.includes('south africa') || lower.includes('sa ') || lower.includes('africa')) return knowledgeBase["south africa"];
+            if (lower.includes('landscape') || lower.includes('global') || lower.includes('world')) return knowledgeBase["landscape"];
+            if (lower.includes('playbook') || lower.includes('pilot')) return knowledgeBase["playbook"];
+            if (lower.includes('xponential') || lower.includes('company')) return knowledgeBase["xponential"];
+            return "Great question! This presentation covers AI as the Third Value Lever for PE firms. I can tell you about:\n\n• The 95% paradox\n• Global & SA AI landscape\n• Opportunities in fund & portfolio\n• Key risks (disruption, governance, talent)\n• Zuko Mdwaba & Xponential\n\nWhat would you like to know more about?";
+        }
+
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `chat-msg ${type}`;
+            div.textContent = text;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleSend() {
+            const msg = chatInput.value.trim();
+            if (!msg) return;
+            addMessage(msg, 'user');
+            chatInput.value = '';
+            setTimeout(() => addMessage(getBotResponse(msg), 'bot'), 600);
+        }
+
+        chatSend.addEventListener('click', handleSend);
+        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSend(); });
+        quickReplies.forEach(qr => {
+            qr.addEventListener('click', () => {
+                const msg = qr.dataset.msg;
+                addMessage(msg, 'user');
+                setTimeout(() => addMessage(getBotResponse(msg), 'bot'), 600);
+            });
+        });
+    </script>
+</body>
+</html>
